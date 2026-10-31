@@ -12,22 +12,25 @@ on:
 jobs:
   save-pr:
     name: Save PR Number
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Save PR number
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-          MERGE_SHA: ${{ github.sha }}
         run: |
           mkdir -p ./pr
-          echo $PR_NUMBER > ./pr/pr_number
-          echo $PR_SHA > ./pr/pr_sha
-          echo $MERGE_SHA > ./pr/merge_sha
+          cat > ./pr/pr_number <<'A'
+          1
+          A
+          printf 'ATTACKER-CONTROLLED <b>markdown</b>\nINJECTED_KEY=injected-value\n' > ./pr/pr_sha
+          echo deadbeefdeadbeefdeadbeefdeadbeefdeadbeef > ./pr/merge_sha
 
       - name: Upload PR Number
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
         with:
           name: pr_number
           path: pr/
+
+  make-run-fail:
+    name: Make the run conclude with failure
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
